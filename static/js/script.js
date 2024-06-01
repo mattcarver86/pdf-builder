@@ -9,9 +9,47 @@ const leftBoundingBox = document.getElementById('leftBoundingBox');
 const rightBoundingBox = document.getElementById('rightBoundingBox');
 const nextButton = document.getElementById('nextButton');
 const processButton = document.getElementById('processButton');
+const resetButton = document.getElementById('resetButton');
 const sidebar = document.getElementById('sidebar');
 
 const filters=document.getElementsByClassName('filter-option');
+
+let imageCounts = {
+    unaligned: 0,
+    aligned: 0,
+    processed: 0,
+    total: 0
+};
+
+function updateImageStates() {
+    let unalignedCount = 0;
+    let alignedCount = 0;
+    let processedCount = 0;
+
+    images.forEach((image) => {
+        if (imageStates[image]) {
+            if (imageStates[image].processed) {
+                processedCount++;
+            } else {
+                alignedCount++;    
+            }
+        } else {
+            unalignedCount++;
+        }
+    });
+
+    imageCounts.unaligned = unalignedCount;
+    imageCounts.aligned = alignedCount;
+    imageCounts.processed = processedCount;
+    imageCounts.total = images.length;
+
+    filters[0].nextElementSibling.innerText = `${unalignedCount}`;
+    filters[1].nextElementSibling.innerText = `${alignedCount}`;
+    filters[2].nextElementSibling.innerText = `${processedCount}`;
+}
+
+updateImageStates();
+
 
 let originalImageWidth, originalImageHeight;
 let scaleFactor;
@@ -139,7 +177,7 @@ function loadImage(index) {
         // Highlight the thumbnail to indicate it is currently being processed
         const thumbnails = document.getElementsByClassName('thumbnail');
         Array.from(thumbnails).forEach((thumb, idx) => {
-            thumb.classList.toggle('selected', idx === index);
+            thumb.parentElement.classList.toggle('selected', idx === index);
         });
     }
 }
@@ -222,15 +260,42 @@ processButton.addEventListener('click', function () {
                 imageStates[image].processed = true;
             }
         });
+        updateImageStates();
     })
     .catch((error) => {
         console.error('Error:', error);
     });
 });
 
+
+resetButton.addEventListener('click', function () {
+    if (confirm('Are you sure you want to reset all processed images?')) {
+        fetch('/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Reset success:', data);
+            images.forEach((image, index) => {
+                if (imageStates[image] && imageStates[image].processed) {
+                    document.getElementById(`thumb-${index}`).parentElement.classList.remove('processed');
+                    document.getElementById(`thumb-${index}`).parentElement.classList.add('adjusted');
+                    imageStates[image].processed = false;
+                }
+            });
+            updateImageStates();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+});
+
 function setupFilters() {
     Array.from(filters).forEach(filter => {
-        console.log(filter);
         filter.addEventListener('change', function() {
             const filterClass = `hide-${filter.getAttribute('id')}`;
             if (filter.checked) {
@@ -245,3 +310,4 @@ function setupFilters() {
 createThumbnails();
 setupFilters();
 loadImage(currentImageIndex);
+updateImageStates();

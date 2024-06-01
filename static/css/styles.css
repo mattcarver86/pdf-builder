@@ -25,15 +25,15 @@ body {
   position:relative;
 }
 
-.sidebar.hide-unadjusted .thumbnail-holder:not(.adjusted):not(.processed) {
+.sidebar.hide-unadjusted .thumbnail-holder:not(.adjusted):not(.processed):not(.selected) {
   display:none;
 }
 
-.sidebar.hide-adjusted .thumbnail-holder.adjusted {
+.sidebar.hide-adjusted .thumbnail-holder.adjusted:not(.selected) {
   display:none;
 }
 
-.sidebar.hide-processed .thumbnail-holder.processed {
+.sidebar.hide-processed .thumbnail-holder.processed:not(.selected) {
   display:none;
 }
 
@@ -60,6 +60,13 @@ body {
   position: relative;
   top:0;
   left:0;
+  color: black;
+  font-size: 15px;
+  line-height: 50px;
+  text-align: center;
+  overflow: visible;
+  margin-bottom: 14px;
+  cursor: pointer;
 }
 
 input[type="checkbox"] {
@@ -113,6 +120,9 @@ input[type="checkbox"]:not(:checked) + .filter-label::after {
   background-color:white;
   border:2px solid black;
 }
+.thumbnail-holder.selected .thumbnail {
+  border: 5px solid var(--blue);
+}
 
 .thumbnail-holder.processed::after {
   background-color: var(--green);
@@ -139,6 +149,7 @@ input[type="checkbox"]:not(:checked) + .filter-label::after {
   display: flex;
   justify-content: space-around;
   flex-direction: row;
+  padding-bottom: 20px;
 }
 
 .image {
