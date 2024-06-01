@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Image Processor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+      <div class="filter">
+        
+        <input type="checkbox" id="unadjusted" name="unadjusted" class="filter-option" checked>
+        <label class="filter-label" for="unadjusted" id="unadjusted-label"></label>
+        
+        <input type="checkbox" id="adjusted" name="adjusted" class="filter-option" checked>
+        <label class="filter-label" for="adjusted" id="adjusted-label"></label>
+        
+        <input type="checkbox" id="processed" name="processed" class="filter-option" checked>
+        <label class="filter-label" for="processed" id="processed-label"></label>
+      </div>
+    </div>
+    <div class="main-frame">
+      <div class="container">
+          <img id="bookImage" class="image" src="" alt="Book Page">
+          <div id="centerLine" class="line"></div>
+          <div id="handle1" class="handle"></div>
+          <div id="handle2" class="handle"></div>
+          <div id="marker1" class="marker"></div>
+          <div id="marker2" class="marker"></div>
+          <div id="leftBoundingBox" class="bounding-box"></div>
+          <div id="rightBoundingBox" class="bounding-box"></div>
+      </div>
+      <div class="button-holder">
+        <button id="nextButton">Next Image</button>
+        <button id="processButton">Process Images</button>
+      </div>
+    </div>
+
+    <script>
+        var images = {{ images|tojson }};
+        var imageStates = {{ image_states|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

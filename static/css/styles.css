@@ -1,0 +1,190 @@
+:root {
+  --blue: #007bff;
+  --grey: #6c757d;
+  --green: #28a745;
+  --yellow: #ffc107;
+  --red: #dc3545;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  margin: 0;
+}
+
+.sidebar {
+  width: 240px;
+  overflow-y: scroll;
+  border-right: 2px solid #ddd;
+  padding: 10px;
+  height: 100vh;
+  padding-top: 50px;
+  position:relative;
+}
+
+.sidebar.hide-unadjusted .thumbnail-holder:not(.adjusted):not(.processed) {
+  display:none;
+}
+
+.sidebar.hide-adjusted .thumbnail-holder.adjusted {
+  display:none;
+}
+
+.sidebar.hide-processed .thumbnail-holder.processed {
+  display:none;
+}
+
+.filter {
+  position:fixed;
+  top:0;
+  left:0;
+  width:200px;
+  background-color:lightblue;
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row;
+  padding:10px 0;
+  z-index:100;
+}
+
+.filter .filter-label {
+  height:15px;
+  width:15px;
+  border-radius:50%;
+  background-color:white;
+  border:2px solid black;
+  display:inline-block;
+  position: relative;
+  top:0;
+  left:0;
+}
+
+input[type="checkbox"] {
+  display:none;
+}
+
+input[type="checkbox"]:not(:checked) + .filter-label::after {
+  content:'';
+  height:15px;
+  width:6px;
+  background-color:var(--red);
+  display:block;
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:rotate(45deg) translateX(-50%);
+}
+
+.filter-label#adjusted-label {
+  background-color:var(--yellow);
+}
+
+.filter-label#processed-label {
+  background-color:var(--green);
+}
+
+.thumbnail-holder {
+  width:170px;
+  height:150px;
+  position:relative;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius:5px;
+}
+
+.thumbnail-holder::after {
+  content:"";
+  position:absolute;
+  bottom:10px;
+  right:10px;
+  height:15px;
+  width:15px;
+  border-radius:50%;
+  background-color:white;
+  border:2px solid black;
+}
+
+.thumbnail-holder.processed::after {
+  background-color: var(--green);
+}
+
+.thumbnail-holder.adjusted::after {
+  background-color: var(--yellow);
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+}
+
+.main-frame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.button-holder {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row;
+}
+
+.image {
+  width: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.line {
+  position: absolute;
+  width: 2px;
+  background: red;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: blue;
+  cursor: move;
+  transform: translate(-50%, -50%);
+}
+
+.marker {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: red;
+  cursor: move;
+}
+
+.bounding-box {
+  position: absolute;
+  border: 2px dashed green;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  background: var(--blue);
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: bold;
+}
