@@ -32,21 +32,11 @@ def rotate_image_and_crop(img, line_position, angle, is_right_page):
 
     adjusted_angle = angle - 90
 
-    # print(f"adjusted_angle: {adjusted_angle}")
-
     # Rotate the image around its center
     rotated_img = img.rotate(adjusted_angle, center=(cx, cy), resample=Image.BICUBIC, expand=True)
 
-    # Ensure line_position is an iterable object
-    # line_position = line_position if isinstance(line_position, list) else [line_position]
-
     point1 = rotate_point(line_position[0], line_position[1], cx, cy, adjusted_angle)
     point2 = rotate_point(line_position[2], line_position[3], cx, cy, adjusted_angle)
-
-    # Rotate the line position
-    # rotated_line_position = [rotate_point(x, y, cx, cy, adjusted_angle) for x, y in line_position]
-
-    # print(f"rotated_line_position: {point1}, {point2}")
 
     # Calculate the new bounding box
     x1, y1 = point1
@@ -113,9 +103,6 @@ def process_images():
             for image_name, state in states.items():
                 if not state['processed']:
                     line_position = state['line_position']
-
-                    # print out line position
-                    # print(f"Line position: {line_position}")
 
                     image_path = os.path.join(IMAGE_FOLDER, image_name)
                     if not os.path.exists(image_path):

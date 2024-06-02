@@ -163,10 +163,6 @@ function loadImage(index) {
                 const imgRect = bookImage.getBoundingClientRect();
                 scaleFactor = imgRect.width / originalImageWidth;
 
-                // handle1.style.left = `${imgRect.width / 2}px`;
-                // handle1.style.top = `0px`;
-                // handle2.style.left = `${imgRect.width / 2}px`;
-                // handle2.style.top = `${imgRect.height}px`;
                 updateLineAndBoxes();
 
                 // Load saved state if it exists
