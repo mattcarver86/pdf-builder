@@ -24,28 +24,38 @@ def save_image_states(states):
     with open(STATE_FILE, 'w') as f:
         json.dump(states, f)
 
-def rotate_image_and_crop(img, bbox, angle):
+
+def rotate_image_and_crop(img, line_position, angle, is_right_page):
     """ Rotate the image and the bounding box and then crop it. """
     width, height = img.size
     cx, cy = width / 2, height / 2
-
-    # make bbcx and bbcy the center of the bounding box
-    bbcx = (bbox[0][0] + bbox[1][0]) / 2
-    bbcy = (bbox[0][1] + bbox[2][1]) / 2
 
     adjusted_angle = angle - 90
 
     print(f"adjusted_angle: {adjusted_angle}")
 
     # Rotate the image around its center
-    rotated_img = img.rotate(adjusted_angle, center=(bbcx, bbcy), resample=Image.BICUBIC, expand=True)
+    rotated_img = img.rotate(adjusted_angle, center=(cx, cy), resample=Image.BICUBIC, expand=True)
 
-    # # Calculate new bounding box coordinates after rotation
-    rotated_bbox = [rotate_point(x, y, bbcx, bbcy, adjusted_angle) for x, y in bbox]
-    new_x = [p[0] for p in rotated_bbox]
-    new_y = [p[1] for p in rotated_bbox]
-    
-    cropped_img = rotated_img.crop((min(new_x), min(new_y), max(new_x), max(new_y)))
+    # Ensure line_position is an iterable object
+    # line_position = line_position if isinstance(line_position, list) else [line_position]
+
+    point1 = rotate_point(line_position[0], line_position[1], cx, cy, adjusted_angle)
+    point2 = rotate_point(line_position[2], line_position[3], cx, cy, adjusted_angle)
+
+    # Rotate the line position
+    # rotated_line_position = [rotate_point(x, y, cx, cy, adjusted_angle) for x, y in line_position]
+
+    print(f"rotated_line_position: {point1}, {point2}")
+
+    # Calculate the new bounding box
+    x1, y1 = point1
+    x2, y2 = point2
+    box_height = int(math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2))
+    box_width = int(box_height * 0.7054263566)
+
+    # crop the rotated image by the new bounding box
+    cropped_img = rotated_img.crop((x1, y1, x1 + box_width, y2)) if is_right_page else rotated_img.crop((x1 - box_width, y1, x1, y2))
 
     return cropped_img
 
@@ -128,8 +138,8 @@ def process_images():
                     right_bbox = [(x1, y1), (x1 + box_width, y1), (x1, y2), (x1 + box_width, y2)]
 
                     # Crop rotated images
-                    left_img = rotate_image_and_crop(img, left_bbox, angle)
-                    right_img = rotate_image_and_crop(img, right_bbox, angle)
+                    left_img = rotate_image_and_crop(img, [x1,y1,x2,y2], angle, 0)
+                    right_img = rotate_image_and_crop(img, [x1,y1,x2,y2], angle, 1)
 
                     # Get the page number from the image name
                     image_count = int(image_name.split('.')[0][-3:])
