@@ -180,6 +180,7 @@ function loadImage(index) {
             thumb.parentElement.classList.toggle('selected', idx === index);
         });
     }
+    updateImageStates();
 }
 
 function createThumbnails() {
@@ -233,6 +234,7 @@ function saveImageState() {
     .then(data => {
         console.log('State saved:', data);
         document.getElementById(`thumb-${currentImageIndex}`).parentElement.classList.add('adjusted');
+        updateImageStates();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -243,7 +245,16 @@ nextButton.addEventListener('click', function () {
     loadImage(currentImageIndex + 1);
 });
 
+document.addEventListener('keydown', function (event) {
+    if (event.code === 'Space') {
+        loadImage(currentImageIndex + 1);
+    }
+});
+
 processButton.addEventListener('click', function () {
+    progressBar.style.width = '0%';  // Reset progress bar
+    progressBar.textContent = '0%';
+
     fetch('/process', {
         method: 'POST',
         headers: {
@@ -251,6 +262,9 @@ processButton.addEventListener('click', function () {
         }
     })
     .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
         const eventSource = new EventSource('/progress');
         eventSource.onmessage = function (event) {
             if (event.data === 'error') {
@@ -278,9 +292,6 @@ processButton.addEventListener('click', function () {
         console.error('Error:', error);
     });
 });
-
-
-
 
 resetButton.addEventListener('click', function () {
     if (confirm('Are you sure you want to reset all processed images?')) {

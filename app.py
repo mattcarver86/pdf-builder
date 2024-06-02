@@ -12,7 +12,7 @@ OUTPUT_FOLDER = 'output'
 STATE_FILE = 'image_states.json'
 
 # Condensed array starting with roman numerals II to X and then numbers from 1 to 471
-NAME_ARRAY = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"] + [str(i) for i in range(1, 472)]
+NAME_ARRAY = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"] + [str(i) for i in range(1, 471)]
 
 def load_image_states():
     if os.path.exists(STATE_FILE):
@@ -32,7 +32,7 @@ def rotate_image_and_crop(img, line_position, angle, is_right_page):
 
     adjusted_angle = angle - 90
 
-    print(f"adjusted_angle: {adjusted_angle}")
+    # print(f"adjusted_angle: {adjusted_angle}")
 
     # Rotate the image around its center
     rotated_img = img.rotate(adjusted_angle, center=(cx, cy), resample=Image.BICUBIC, expand=True)
@@ -46,7 +46,7 @@ def rotate_image_and_crop(img, line_position, angle, is_right_page):
     # Rotate the line position
     # rotated_line_position = [rotate_point(x, y, cx, cy, adjusted_angle) for x, y in line_position]
 
-    print(f"rotated_line_position: {point1}, {point2}")
+    # print(f"rotated_line_position: {point1}, {point2}")
 
     # Calculate the new bounding box
     x1, y1 = point1
@@ -115,7 +115,7 @@ def process_images():
                     line_position = state['line_position']
 
                     # print out line position
-                    print(f"Line position: {line_position}")
+                    # print(f"Line position: {line_position}")
 
                     image_path = os.path.join(IMAGE_FOLDER, image_name)
                     if not os.path.exists(image_path):
@@ -150,7 +150,9 @@ def process_images():
                     right_output_path = os.path.join(OUTPUT_FOLDER, f"{str(right_page_index).zfill(3)}_page-{NAME_ARRAY[right_page_index]}.{file_type}")
 
                     left_img.save(left_output_path)
+                    print(f"{left_output_path} Processed")
                     right_img.save(right_output_path)
+                    print(f"{right_output_path} Processed")
 
                     states[image_name]['processed'] = True
                     save_image_states(states)

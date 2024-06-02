@@ -144,6 +144,7 @@ input[type="checkbox"]:not(:checked) + .filter-label::after {
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow:hidden;
 }
 
 .button-holder {
@@ -157,6 +158,10 @@ input[type="checkbox"]:not(:checked) + .filter-label::after {
   width: 100%;
   display: block;
   pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .line {
