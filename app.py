@@ -12,7 +12,7 @@ OUTPUT_FOLDER = 'output'
 STATE_FILE = 'image_states.json'
 
 # Condensed array starting with roman numerals II to X and then numbers from 1 to 471
-NAME_ARRAY = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"] + [str(i) for i in range(1, 471)]
+NAME_ARRAY = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"] + [str(i) for i in range(1, 472)]
 
 def load_image_states():
     if os.path.exists(STATE_FILE):

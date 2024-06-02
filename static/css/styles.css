@@ -196,6 +196,10 @@ input[type="checkbox"]:not(:checked) + .filter-label::after {
   pointer-events: none;
 }
 
+.bounding-box.red {
+  border-color: red;
+}
+
 button {
   padding: 10px;
   border: none;

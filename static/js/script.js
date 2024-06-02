@@ -57,7 +57,7 @@ let scaleFactor;
 // Sort images alphabetically
 images.sort();
 
-function updateLineAndBoxes() {
+function updateLineAndBoxes(resetFlag = false) {
     const ratio = 0.7054263566;
     const x1 = parseFloat(handle1.style.left);
     const y1 = parseFloat(handle1.style.top);
@@ -110,6 +110,14 @@ function updateLineAndBoxes() {
     rightBoundingBox.style.left = `${C2x - (boxWidth / 2)}px`;
     rightBoundingBox.style.top = `${C2y - (boxHeight / 2)}px`;
     rightBoundingBox.style.transform = `rotate(${angle}deg)`;
+
+    if (!imageStates[images[currentImageIndex]]) {
+        leftBoundingBox.classList.add('red');
+        rightBoundingBox.classList.add('red');
+    } else {
+        leftBoundingBox.classList.remove('red');
+        rightBoundingBox.classList.remove('red');
+    }
 }
 
 function makeDraggable(handle) {
@@ -155,10 +163,10 @@ function loadImage(index) {
                 const imgRect = bookImage.getBoundingClientRect();
                 scaleFactor = imgRect.width / originalImageWidth;
 
-                handle1.style.left = `${imgRect.width / 2}px`;
-                handle1.style.top = `0px`;
-                handle2.style.left = `${imgRect.width / 2}px`;
-                handle2.style.top = `${imgRect.height}px`;
+                // handle1.style.left = `${imgRect.width / 2}px`;
+                // handle1.style.top = `0px`;
+                // handle2.style.left = `${imgRect.width / 2}px`;
+                // handle2.style.top = `${imgRect.height}px`;
                 updateLineAndBoxes();
 
                 // Load saved state if it exists
@@ -239,6 +247,7 @@ function saveImageState() {
     .catch((error) => {
         console.error('Error:', error);
     });
+    updateLineAndBoxes();
 }
 
 nextButton.addEventListener('click', function () {
@@ -248,6 +257,9 @@ nextButton.addEventListener('click', function () {
 document.addEventListener('keydown', function (event) {
     if (event.code === 'Space') {
         loadImage(currentImageIndex + 1);
+    }
+    if (event.code === 'ArrowDown') {
+        saveImageState();
     }
 });
 
