@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, jsonify, send_from_directory,
 from PIL import Image
 import os
 import json
+import math
 import time
 
 app = Flask(__name__)
@@ -22,6 +23,40 @@ def load_image_states():
 def save_image_states(states):
     with open(STATE_FILE, 'w') as f:
         json.dump(states, f)
+
+def rotate_image_and_crop(img, bbox, angle):
+    """ Rotate the image and the bounding box and then crop it. """
+    width, height = img.size
+    cx, cy = width / 2, height / 2
+
+    # make bbcx and bbcy the center of the bounding box
+    bbcx = (bbox[0][0] + bbox[1][0]) / 2
+    bbcy = (bbox[0][1] + bbox[2][1]) / 2
+
+    adjusted_angle = angle - 90
+
+    print(f"adjusted_angle: {adjusted_angle}")
+
+    # Rotate the image around its center
+    rotated_img = img.rotate(adjusted_angle, center=(bbcx, bbcy), resample=Image.BICUBIC, expand=True)
+
+    # # Calculate new bounding box coordinates after rotation
+    rotated_bbox = [rotate_point(x, y, bbcx, bbcy, adjusted_angle) for x, y in bbox]
+    new_x = [p[0] for p in rotated_bbox]
+    new_y = [p[1] for p in rotated_bbox]
+    
+    cropped_img = rotated_img.crop((min(new_x), min(new_y), max(new_x), max(new_y)))
+
+    return cropped_img
+
+def rotate_point(x, y, cx, cy, angle):
+    """ Rotate a point around a center with a given angle in degrees. """
+    radians = math.radians(angle)
+    dx = x - cx
+    dy = y - cy
+    nx = dx * math.cos(radians) - dy * math.sin(radians)
+    ny = dx * math.sin(radians) + dy * math.cos(radians)
+    return cx + nx, cy + ny
 
 @app.route('/')
 def index():
@@ -69,46 +104,40 @@ def process_images():
                 if not state['processed']:
                     line_position = state['line_position']
 
+                    # print out line position
+                    print(f"Line position: {line_position}")
+
                     image_path = os.path.join(IMAGE_FOLDER, image_name)
                     if not os.path.exists(image_path):
                         print(f"Image path does not exist: {image_path}")
                         continue
 
                     img = Image.open(image_path)
+                    width, height = img.size
 
                     # Extract line position and ensure they are integers
                     x1, y1, x2, y2 = map(int, line_position)
-                    
-                    width, height = img.size
-                    # use pythagorean theorem to calculate box height based on the diagonal distance between the two points
-                    box_height = int(((x2 - x1)**2 + (y2 - y1)**2)**0.5)
+                    box_height = int(math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2))
                     box_width = int(box_height * 0.7054263566)
 
-                    # Calculate left and right box coordinates
-                    left_box = (
-                        max(0, x1 - box_width),
-                        max(0, y1),
-                        x1,
-                        min(height, y2)
-                    )
+                    # Calculate angle for rotation
+                    angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
 
-                    right_box = (
-                        x1,
-                        max(0, y1),
-                        min(width, x1 + box_width),
-                        min(height, y2)
-                    )
+                    # Calculate new bounding boxes
+                    left_bbox = [(x1 - box_width, y1), (x1, y1), (x1 - box_width, y2), (x1, y2)]
+                    right_bbox = [(x1, y1), (x1 + box_width, y1), (x1, y2), (x1 + box_width, y2)]
 
-                    left_img = img.crop(left_box)
-                    right_img = img.crop(right_box)
+                    # Crop rotated images
+                    left_img = rotate_image_and_crop(img, left_bbox, angle)
+                    right_img = rotate_image_and_crop(img, right_bbox, angle)
 
-                    # get the page number from the image name
-                    imageCount = int(image_name.split('.')[0][-3:])
-                    fileType = image_name.split('.')[1]
-                    rightPageIndex = (imageCount * 2) - 1
+                    # Get the page number from the image name
+                    image_count = int(image_name.split('.')[0][-3:])
+                    file_type = image_name.split('.')[1]
+                    right_page_index = (image_count * 2) - 1
 
-                    left_output_path = os.path.join(OUTPUT_FOLDER, f"{str(rightPageIndex - 1).zfill(3)}_page-{NAME_ARRAY[rightPageIndex - 1]}.{fileType}")
-                    right_output_path = os.path.join(OUTPUT_FOLDER, f"{str(rightPageIndex).zfill(3)}_page-{NAME_ARRAY[rightPageIndex]}.{fileType}")
+                    left_output_path = os.path.join(OUTPUT_FOLDER, f"{str(right_page_index - 1).zfill(3)}_page-{NAME_ARRAY[right_page_index - 1]}.{file_type}")
+                    right_output_path = os.path.join(OUTPUT_FOLDER, f"{str(right_page_index).zfill(3)}_page-{NAME_ARRAY[right_page_index]}.{file_type}")
 
                     left_img.save(left_output_path)
                     right_img.save(right_output_path)
@@ -129,69 +158,15 @@ def process_images():
 
 @app.route('/progress')
 def progress():
-    states = load_image_states()
-    total_images = len([s for s in states.values() if not s['processed']])
-    processed_images = 0
-
     def generate():
-        nonlocal processed_images
-        for image_name, state in states.items():
-            if not state['processed']:
-                line_position = state['line_position']
-
-                image_path = os.path.join(IMAGE_FOLDER, image_name)
-                if not os.path.exists(image_path):
-                    print(f"Image path does not exist: {image_path}")
-                    continue
-
-                img = Image.open(image_path)
-
-                # Extract line position and ensure they are integers
-                x1, y1, x2, y2 = map(int, line_position)
-                
-                width, height = img.size
-                # use pythagorean theorem to calculate box height based on the diagonal distance between the two points
-                box_height = int(((x2 - x1)**2 + (y2 - y1)**2)**0.5)
-                box_width = int(box_height * 0.7054263566)
-
-                # Calculate left and right box coordinates
-                left_box = (
-                    max(0, x1 - box_width),
-                    max(0, y1),
-                    x1,
-                    min(height, y2)
-                )
-
-                right_box = (
-                    x1,
-                    max(0, y1),
-                    min(width, x1 + box_width),
-                    min(height, y2)
-                )
-
-                left_img = img.crop(left_box)
-                right_img = img.crop(right_box)
-
-                # get the page number from the image name
-                imageCount = int(image_name.split('.')[0][-3:])
-                fileType = image_name.split('.')[1]
-                rightPageIndex = (imageCount * 2) - 1
-
-                left_output_path = os.path.join(OUTPUT_FOLDER, f"{str(rightPageIndex - 1).zfill(3)}_page-{NAME_ARRAY[rightPageIndex - 1]}.{fileType}")
-                right_output_path = os.path.join(OUTPUT_FOLDER, f"{str(rightPageIndex).zfill(3)}_page-{NAME_ARRAY[rightPageIndex]}.{fileType}")
-
-                left_img.save(left_output_path)
-                right_img.save(right_output_path)
-
-                states[image_name]['processed'] = True
-                save_image_states(states)
-
-                processed_images += 1
-                yield f"data: {json.dumps((processed_images / total_images) * 100)}\n\n"
-                time.sleep(0.1)
-
+        states = load_image_states()
+        total_images = len([s for s in states.values() if not s['processed']])
+        processed_images = 0
+        while processed_images < total_images:
+            processed_images = len([s for s in states.values() if s['processed']])
+            yield f"data: {(processed_images / total_images) * 100}\n\n"
+            time.sleep(0.1)
         yield "data: 100\n\n"
-
     return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/reset', methods=['POST'])
