@@ -22,44 +22,44 @@ body {
   padding: 10px;
   height: 100vh;
   padding-top: 50px;
-  position:relative;
+  position: relative;
 }
 
 .sidebar.hide-unadjusted .thumbnail-holder:not(.adjusted):not(.processed):not(.selected) {
-  display:none;
+  display: none;
 }
 
 .sidebar.hide-adjusted .thumbnail-holder.adjusted:not(.selected) {
-  display:none;
+  display: none;
 }
 
 .sidebar.hide-processed .thumbnail-holder.processed:not(.selected) {
-  display:none;
+  display: none;
 }
 
 .filter {
-  position:fixed;
-  top:0;
-  left:0;
-  width:200px;
-  background-color:lightblue;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
+  background-color: lightblue;
   display: flex;
   justify-content: space-around;
   flex-direction: row;
-  padding:10px 0;
-  z-index:100;
+  padding: 10px 0;
+  z-index: 100;
 }
 
 .filter .filter-label {
-  height:15px;
-  width:15px;
-  border-radius:50%;
-  background-color:white;
-  border:2px solid black;
-  display:inline-block;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background-color: white;
+  border: 2px solid black;
+  display: inline-block;
   position: relative;
-  top:0;
-  left:0;
+  top: 0;
+  left: 0;
   color: black;
   font-size: 15px;
   line-height: 50px;
@@ -70,33 +70,33 @@ body {
 }
 
 input[type="checkbox"] {
-  display:none;
+  display: none;
 }
 
 input[type="checkbox"]:not(:checked) + .filter-label::after {
-  content:'';
-  height:15px;
-  width:6px;
-  background-color:var(--red);
-  display:block;
-  position:absolute;
-  top:0;
-  left:50%;
-  transform:rotate(45deg) translateX(-50%);
+  content: '';
+  height: 15px;
+  width: 6px;
+  background-color: var(--red);
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .filter-label#adjusted-label {
-  background-color:var(--yellow);
+  background-color: var(--yellow);
 }
 
 .filter-label#processed-label {
-  background-color:var(--green);
+  background-color: var(--green);
 }
 
 .thumbnail-holder {
-  width:170px;
-  height:150px;
-  position:relative;
+  width: 170px;
+  height: 150px;
+  position: relative;
 }
 
 .thumbnail {
@@ -106,20 +106,21 @@ input[type="checkbox"]:not(:checked) + .filter-label::after {
   margin-bottom: 10px;
   cursor: pointer;
   border: 2px solid transparent;
-  border-radius:5px;
+  border-radius: 5px;
 }
 
 .thumbnail-holder::after {
-  content:"";
-  position:absolute;
-  bottom:10px;
-  right:10px;
-  height:15px;
-  width:15px;
-  border-radius:50%;
-  background-color:white;
-  border:2px solid black;
+  content: "";
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background-color: white;
+  border: 2px solid black;
 }
+
 .thumbnail-holder.selected .thumbnail {
   border: 5px solid var(--blue);
 }
@@ -198,4 +199,22 @@ button {
   cursor: pointer;
   border-radius: 5px;
   font-weight: bold;
+}
+
+#progressContainer {
+  width: 100%;
+  height: 30px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#progressBar {
+  height: 100%;
+  width: 0;
+  background-color: var(--blue);
+  text-align: center;
+  line-height: 30px;
+  color: white;
+  transition: width 0.4s;
 }

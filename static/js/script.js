@@ -11,8 +11,9 @@ const nextButton = document.getElementById('nextButton');
 const processButton = document.getElementById('processButton');
 const resetButton = document.getElementById('resetButton');
 const sidebar = document.getElementById('sidebar');
+const progressBar = document.getElementById('progressBar');
 
-const filters=document.getElementsByClassName('filter-option');
+const filters = document.getElementsByClassName('filter-option');
 
 let imageCounts = {
     unaligned: 0,
@@ -31,7 +32,7 @@ function updateImageStates() {
             if (imageStates[image].processed) {
                 processedCount++;
             } else {
-                alignedCount++;    
+                alignedCount++;
             }
         } else {
             unalignedCount++;
@@ -49,7 +50,6 @@ function updateImageStates() {
 }
 
 updateImageStates();
-
 
 let originalImageWidth, originalImageHeight;
 let scaleFactor;
@@ -250,22 +250,36 @@ processButton.addEventListener('click', function () {
             'Content-Type': 'application/json',
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Processing success:', data);
-        images.forEach((image, index) => {
-            if (imageStates[image] && !imageStates[image].processed) {
-                document.getElementById(`thumb-${index}`).parentElement.classList.remove('adjusted');
-                document.getElementById(`thumb-${index}`).parentElement.classList.add('processed');
-                imageStates[image].processed = true;
+    .then(response => {
+        const eventSource = new EventSource('/progress');
+        eventSource.onmessage = function (event) {
+            if (event.data === 'error') {
+                console.error('Error processing images');
+                eventSource.close();
+            } else {
+                const progress = parseFloat(event.data);
+                progressBar.style.width = `${progress}%`;
+                progressBar.textContent = `${progress.toFixed(2)}%`;
+                if (progress >= 100) {
+                    eventSource.close();
+                    images.forEach((image, index) => {
+                        if (imageStates[image] && !imageStates[image].processed) {
+                            document.getElementById(`thumb-${index}`).parentElement.classList.remove('adjusted');
+                            document.getElementById(`thumb-${index}`).parentElement.classList.add('processed');
+                            imageStates[image].processed = true;
+                        }
+                    });
+                    updateImageStates();
+                }
             }
-        });
-        updateImageStates();
+        };
     })
     .catch((error) => {
         console.error('Error:', error);
     });
 });
+
+
 
 
 resetButton.addEventListener('click', function () {
@@ -306,6 +320,25 @@ function setupFilters() {
         });
     });
 }
+
+function resizeImageAndBoxes() {
+    const imgRect = bookImage.getBoundingClientRect();
+    scaleFactor = imgRect.width / originalImageWidth;
+
+    // Recalculate handle positions
+    const currentImage = images[currentImageIndex];
+    if (imageStates[currentImage]) {
+        const linePos = imageStates[currentImage].line_position;
+        handle1.style.left = `${linePos[0] * scaleFactor}px`;
+        handle1.style.top = `${linePos[1] * scaleFactor}px`;
+        handle2.style.left = `${linePos[2] * scaleFactor}px`;
+        handle2.style.top = `${linePos[3] * scaleFactor}px`;
+        updateLineAndBoxes();
+    }
+}
+
+// Add event listener for window resize
+window.addEventListener('resize', resizeImageAndBoxes);
 
 createThumbnails();
 setupFilters();

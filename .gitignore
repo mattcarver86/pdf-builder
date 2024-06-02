@@ -1,2 +1,6 @@
 /output
 /images
+/images_original
+.DS_Store
+/rename
+
